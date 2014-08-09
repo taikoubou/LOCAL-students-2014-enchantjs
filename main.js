@@ -8,8 +8,47 @@ enchant();
 window.onload = function() {
     var game = new Core(320,320);
     game.fps = 60;
-    game.preload('chara1.png','map0.gif');
+    game.preload('chara1.png','map0.gif','mbox.png');
+    game.keybind(90,'a');
+
+    var MenuScene = function(){
+        var scene = new Scene();
+        var buttonflag = false;
+        var label = new Label();
+
+        var sw = new MenuWindow(scene,10,230);
+
+        scene.addEventListener('enterframe',function(){
+            if(game.input.a && buttonflag){
+                game.popScene();
+            }
+            else if(!game.input.a && !buttonflag){
+                buttonflag = true;
+            }
+        });
+
+        label.x = 20;
+        label.y = 240;
+        label.font = '16px "Arial"';
+        label.text = "hoge";
+
+        scene.addChild(label);
+        return scene;
+    }
+
+    var MenuWindow = enchant.Class.create(enchant.Sprite,{
+        initialize: function(scene,x,y){
+                        enchant.Sprite.call(this,300,80);
+                        this.image = game.assets['mbox.png'];
+                        this.x = x;
+                        this.y = y;
+                        this.opacity = 0.5;
+                        scene.addChild(this);
+                    }
+    });
     game.onload = function(){
+        var messageFlag = false;
+        var buttonFlag = false;
         var bear = new Sprite(32,32);
         var map1 = new Map(16,16);
 
@@ -19,15 +58,29 @@ window.onload = function() {
         map1.image = game.assets['map0.gif'];
 
         map1Load(map1);
+
         bear.x=16;
         bear.y=16;
         bear.frame = [0,0,0,0,0,0,1,1,1,1,1,1];
 
         bear.addEventListener('enterframe',function(){
-            if(game.input.left && !map1.hitTest(bear.x-2,bear.y))this.x-=2;
-            else if(game.input.right && !map1.hitTest(bear.x+32,bear.y))this.x+=2;
-            else if(game.input.up && !map1.hitTest(bear.x,bear.y-2))this.y-=2;
-            else if(game.input.down && !map1.hitTest(bear.x,bear.y+32))this.y+=2;
+            if(game.input.left && !map1.hitTest(this.x-2,this.y))this.x-=2;
+            else if(game.input.right && !map1.hitTest(this.x+32,this.y))this.x+=2;
+            else if(game.input.up && !map1.hitTest(this.x,this.y-2))this.y-=2;
+            else if(game.input.down && !map1.hitTest(this.x,this.y+32))this.y+=2;
+            else if(game.input.a && !buttonFlag){
+                buttonFlag = true;
+                if(!messageFlag){
+                    game.pushScene(MenuScene());
+                    messageFlag = false;
+                }
+                else {
+                    messageFlag = false;
+                }
+            }
+            else if(!game.input.a && buttonFlag){
+                buttonFlag = false;
+            }
         });
 
         game.rootScene.addChild(map1);
@@ -103,3 +156,4 @@ var map1Load = function(map){
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ];
 }
+
