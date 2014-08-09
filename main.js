@@ -1,12 +1,14 @@
-// 1:UP
-// 2:LEFT
-// 3:RIGHT
-// 4:DOWN
-
 enchant();
 
 window.onload = function() {
     var game = new Core(320,320);
+    var items = [];
+    items[0] = "こんなモン";
+    items[1] = "宇宙ゴミ";
+    items[2] = "扇風機";
+    items[3] = "小並感";
+    items[4] = "あれ";
+    items[5] = "PUYOPOP";
     game.fps = 60;
     game.preload('chara1.png','map0.gif','mbox.png');
     game.keybind(90,'a');
@@ -27,13 +29,21 @@ window.onload = function() {
             }
         });
 
-        label.x = 20;
-        label.y = 240;
-        label.font = '16px "Arial"';
-        label.text = "hoge";
-
+        label = MakeMessage(items[getRand(6)] + " を手に入れた");
         scene.addChild(label);
         return scene;
+    }
+
+    var MakeMessage = function(str){
+        var tmplabel = new Label();
+
+        tmplabel.color = 'white';
+        tmplabel.x = 20;
+        tmplabel.y = 240;
+        tmplabel.font = '16px "Arial"';
+        tmplabel.text = str;
+
+        return tmplabel;
     }
 
     var MenuWindow = enchant.Class.create(enchant.Sprite,{
@@ -46,6 +56,23 @@ window.onload = function() {
                         scene.addChild(this);
                     }
     });
+
+    var isEncounter = function(){
+        var rnd = getRand(1000);
+
+        if(rnd > 995){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    var getRand = function(n){
+        var rnd = Math.floor(Math.random() * n);
+        return rnd;
+    }
+
     game.onload = function(){
         var messageFlag = false;
         var buttonFlag = false;
@@ -64,14 +91,27 @@ window.onload = function() {
         bear.frame = [0,0,0,0,0,0,1,1,1,1,1,1];
 
         bear.addEventListener('enterframe',function(){
-            if(game.input.left && !map1.hitTest(this.x-2,this.y))this.x-=2;
-            else if(game.input.right && !map1.hitTest(this.x+32,this.y))this.x+=2;
-            else if(game.input.up && !map1.hitTest(this.x,this.y-2))this.y-=2;
-            else if(game.input.down && !map1.hitTest(this.x,this.y+32))this.y+=2;
+            var itemEncflag = false;
+            if(game.input.left && !map1.hitTest(this.x-2,this.y)){
+                this.x-=2;
+                itemEncflag = isEncounter();
+            }
+            else if(game.input.right && !map1.hitTest(this.x+32,this.y)){
+                this.x+=2;
+                itemEncflag = isEncounter();
+            }
+            else if(game.input.up && !map1.hitTest(this.x,this.y-2)){
+                this.y-=2;
+                itemEncflag = isEncounter();
+            }
+            else if(game.input.down && !map1.hitTest(this.x,this.y+32)){
+                this.y+=2;
+                itemEncflag = isEncounter();
+            }
             else if(game.input.a && !buttonFlag){
                 buttonFlag = true;
                 if(!messageFlag){
-                    game.pushScene(MenuScene());
+                    //game.pushScene(MenuScene());
                     messageFlag = false;
                 }
                 else {
@@ -80,6 +120,10 @@ window.onload = function() {
             }
             else if(!game.input.a && buttonFlag){
                 buttonFlag = false;
+            }
+            if(itemEncflag){
+                itemEncflag = false;
+                game.pushScene(MenuScene());
             }
         });
 
