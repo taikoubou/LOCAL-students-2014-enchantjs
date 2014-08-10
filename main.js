@@ -8,12 +8,23 @@ window.onload = function() {
     items[2] = "扇風機";
     items[3] = "小並感";
     items[4] = "あれ";
-    items[5] = "PUYOPOP";
+    items[5] = "ぷよぽっぷ";
     game.fps = 60;
     game.preload('chara1.png','map0.gif','mbox.png');
     game.keybind(90,'a');
 
-    var MenuScene = function(){
+    var haveItem = function(){
+        var n=0;
+        var itemName="";
+    }
+
+    var addItem = function(item,str){
+        if(item.itemName != "")item.itemName = str;
+        console.log(typeof(item.n));
+        item.n++;
+    }
+
+    var MessageScene = function(randN){
         var scene = new Scene();
         var buttonflag = false;
         var label = new Label();
@@ -29,8 +40,48 @@ window.onload = function() {
             }
         });
 
-        label = MakeMessage(items[getRand(6)] + " を手に入れた");
+        label = MakeMessage(items[randN] + " を手に入れた");
         scene.addChild(label);
+        return scene;
+    }
+
+    var MenuScene = function(itemList){
+        var scene = new Scene();
+        var label = new Label();
+        var buttonflag = false;
+        var len = itemList.length;
+
+        console.log(itemList[0]);
+
+        label = new Array();
+
+        var sw = new MenuWindow(scene,10,230);
+
+        scene.addEventListener('enterframe',function(){
+            if(game.input.a && buttonflag){
+                game.popScene();
+            }
+            else if(!game.input.a && !buttonflag){
+                buttonflag = true;
+            }
+        });
+
+        for(var i=0;i<len;i++){
+            label[i] = new Label();
+            label[i] = (function(n,lb,item){
+                var dy = [240,240,260,260,280,280];
+                var dx = [20,170,20,170,20,170];
+                console.log(typeof(lb));
+                lb.y = dy[n];
+                lb.x = dx[n];
+                lb.font = '16px "Arial"';
+                lb.text = item.itemName + " " + item.n.toString();
+                lb.color = 'white';
+                return lb;
+            })(i,label[i],itemList[i]);
+            scene.addChild(label[i]);
+        }
+
         return scene;
     }
 
@@ -76,8 +127,11 @@ window.onload = function() {
     game.onload = function(){
         var messageFlag = false;
         var buttonFlag = false;
+        var randN = 0;
         var bear = new Sprite(32,32);
         var map1 = new Map(16,16);
+        var HeroItem = new haveItem();
+        HeroItem = new Array();
 
         bear.scale(0.5,0.5);
 
@@ -111,7 +165,7 @@ window.onload = function() {
             else if(game.input.a && !buttonFlag){
                 buttonFlag = true;
                 if(!messageFlag){
-                    //game.pushScene(MenuScene());
+                    game.pushScene(MenuScene(HeroItem));
                     messageFlag = false;
                 }
                 else {
@@ -123,7 +177,29 @@ window.onload = function() {
             }
             if(itemEncflag){
                 itemEncflag = false;
-                game.pushScene(MenuScene());
+                randN = getRand(6);
+                var len = HeroItem.length;
+                var flag = false;
+                for(var i=0;i<6;i++){
+                    for(var j=0;j<len;j++){
+                        if(HeroItem[j].itemName == items[randN]){
+                            addItem(HeroItem[j],items[randN]);
+                            flag = true;
+                        }
+                        if(flag)break;
+                    }
+                    if(flag)break;
+                }
+                if(!flag){
+                    var hoge = new haveItem();
+                    HeroItem[len] = new haveItem();
+                    HeroItem[len].n = 0;
+                    console.log(HeroItem[len]);
+                    addItem(HeroItem[len],items[randN]);
+                    console.log(HeroItem[len]);
+                }
+                else flag =false;
+                game.pushScene(MessageScene(randN));
             }
         });
 
